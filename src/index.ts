@@ -1,19 +1,48 @@
-import { formattedDate } from './utils'
-
-interface Streak {
-	currentCount: number
-	startDate: string
-	lastLoginDate: string
-}
+import {
+	formattedDate,
+	shouldIncrementOrResetStreakCount,
+	Streak,
+} from './utils'
 
 const KEY = 'streak'
 
-export function streakCounter(storage: Storage, date: Date) {
+export function streakCounter(storage: Storage, date: Date): Streak {
 	const streakInLocalStorage = storage.getItem(KEY)
 
 	if (streakInLocalStorage) {
 		try {
-			const streak = JSON.parse(streakInLocalStorage || '')
+			const streak = JSON.parse(streakInLocalStorage)
+			const state = shouldIncrementOrResetStreakCount(
+				date,
+				streak.lastLoginDate
+			)
+			const SHOULD_INCREMENT = state === 'increment'
+			const SHOULD_RESET = state === 'reset'
+
+			if (SHOULD_INCREMENT) {
+				const updatedStreak = {
+					...streak,
+					currenCount: streak.currenCount + 1,
+					lastLoginDate: formattedDate(date),
+				}
+
+				//store in the localstorage
+				storage.setItem(KEY, JSON.stringify(updatedStreak))
+				return updatedStreak
+			}
+
+			if (SHOULD_RESET) {
+				const updatedStreak: Streak = {
+					currentCount: 1,
+					startDate: formattedDate(date),
+					lastLoginDate: formattedDate(date),
+				}
+
+				//store in the localstorage
+				storage.setItem(KEY, JSON.stringify(updatedStreak))
+				return updatedStreak
+			}
+
 			return streak
 		} catch (error) {
 			console.error('Failed to parse streak from localStorage')
