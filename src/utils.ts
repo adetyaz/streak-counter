@@ -1,3 +1,5 @@
+export const KEY = 'streak'
+
 export interface Streak {
 	currentCount: number
 	startDate: string
@@ -57,4 +59,8 @@ export function buildStreak(
 		...defaultStreak,
 		...overrideDefaults,
 	}
+}
+
+export function updateStreak(storage: Storage, streak: Streak): void {
+	storage.setItem(KEY, JSON.stringify(streak))
 }
